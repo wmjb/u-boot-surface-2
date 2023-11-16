@@ -1,0 +1,371 @@
+/dts-v1/;
+
+#include "tegra114.dtsi"
+
+#include <dt-bindings/input/gpio-keys.h>
+#include <dt-bindings/input/linux-event-codes.h>
+
+/ {
+	model = "Microsoft Surface 2";
+	compatible = "microsoft,surface-2", "nvidia,tegra114";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		i2c0 = "/i2c@7000c000";
+		i2c1 = "/i2c@7000c400";
+		i2c2 = "/i2c@7000c500";
+		i2c3 = "/i2c@7000c700";
+		i2c4 = "/i2c@7000d000";
+		mmc0 = "/sdhci@78000600";
+		mmc1 = "/sdhci@78000400";
+		usb0 = "/usb@7d000000";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x80000000>;
+	};
+
+
+//	reserved-memory {
+//		#address-cells = <1>;
+//		#size-cells = <1>;
+//		ranges;
+
+	//	/* global autoconfigured region for contiguous allocations */
+	//	linux,cma {
+	//		compatible = "shared-dma-pool";
+	//		reusable;
+	//		size = <0x4000000>;
+	//		alignment = <0x2000>;
+	//		linux,cma-default;
+	//	};
+
+	//	display_reserved: framebuffer@78000000 {
+	//		reg = <0x78000000 0x800000>;
+	//	};
+
+//		parking_secondary: parking@82000000 {
+//			compatible = "acpi,parking-memory";
+//			reg = <0x82000000 0x4000000>;
+//		};
+//	};
+
+	host1x@50000000 {
+		dc@54200000 {
+			clocks = <&tegra_car TEGRA114_CLK_DISP1>,
+				 <&tegra_car TEGRA114_CLK_PLL_D_OUT0>;
+
+			rgb {
+				status = "okay";
+
+				nvidia,panel = <&dsia>;
+			};
+		};
+
+		dsia: dsi@54300000 {
+			status = "okay";
+
+			clocks = <&tegra_car TEGRA114_CLK_DSIA>;
+			panel = <&panel>;
+		};
+	};
+
+	panel: panel {
+		compatible = "samsung,106hl02";
+		//reset-gpios = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
+
+		//power-supply = <&tps65090_fet4>;
+
+		backlight = <&backlight>;
+	};
+
+	pwm: pwm@7000a000 {
+		status = "okay";
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+
+		enable-gpios = <&gpio TEGRA_GPIO(CC, 2) GPIO_ACTIVE_HIGH>;
+		pwms = <&pwm 0 1000000>;
+
+		brightness-levels = <16 255>;
+		default-brightness-level = <255>;
+	};
+
+	i2c@7000c000 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	i2c@7000c400 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	i2c@7000c500 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	i2c@7000c700 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	pwr_i2c: i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <400000>;
+
+		/* Texas Instruments TPS65913 PMIC */
+		pmic: tps65913@58 {
+			compatible = "ti,tps65913";
+			reg = <0x58>;
+
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
+
+			ti,system-power-controller;
+
+			palmas_gpio: gpio {
+				compatible = "ti,palmas-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			pmic {
+				compatible = "ti,tps65913-pmic";
+
+
+
+				regulators {
+					smps123 {
+						regulator-name = "vdd-cpu";
+						regulator-min-microvolt = <1100000>;
+						regulator-max-microvolt = <1100000>;
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <1>;
+						ti,mode-sleep = <0>;
+						regulator-ramp-delay = <2500>;
+						ti,warm-reset;
+					};
+
+					smps457 {
+						regulator-name = "vdd-core";
+						regulator-min-microvolt = <1100000>;
+						regulator-max-microvolt = <1100000>;
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <1>;
+						ti,mode-sleep = <0>;
+						regulator-ramp-delay = <5000>;
+						ti,warm-reset;
+					};
+
+					smps6 {
+						regulator-name = "dunno";
+						regulator-min-microvolt = <850000>;
+						regulator-max-microvolt = <850000>;
+						ti,roof-floor = <1>;
+						ti,mode-sleep = <0>;
+						regulator-ramp-delay = <5000>;
+						ti,warm-reset;
+					};
+
+					tps65913_smps8: smps8 {
+						regulator-name = "vdd-1v8";
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <1800000>;
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <1>;
+						ti,mode-sleep = <0>;
+						regulator-ramp-delay = <5000>;
+						ti,warm-reset;
+					};
+
+					tps65913_smps9: smps9 {
+						regulator-name = "vdd-1v05";
+						regulator-min-microvolt = <1050000>;
+						regulator-max-microvolt = <1050000>;
+						regulator-always-on;
+						ti,warm-reset;
+					};
+					
+					
+					ldo1 {
+						regulator-min-microvolt = <1200000>;
+						regulator-max-microvolt = <1200000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					ldo2 {
+						regulator-min-microvolt = <2800000>;
+						regulator-max-microvolt = <2800000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					ldo3 {
+						regulator-name = "avdd-dsi-csi";
+						regulator-min-microvolt = <1200000>;
+						regulator-max-microvolt = <1200000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+
+
+
+                                        ldo4 {
+                                                regulator-min-microvolt = <1800000>;
+                                                regulator-max-microvolt = <1800000>;
+                                                regulator-always-on;
+                                                regulator-boot-on;
+                                        };
+					
+					ldo5 {
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <1800000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					
+					ldo7 {
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <1800000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					ldo8 {
+						regulator-name = "vdd-rtc";
+						regulator-min-microvolt = <1200000>;
+						regulator-max-microvolt = <1200000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					tps65913_ldo9: ldo9 {
+						regulator-name = "vddio-sdmmc-2";
+						regulator-min-microvolt = <3300000>;
+						regulator-max-microvolt = <3300000>;
+						regulator-always-on;
+					};
+					
+					ldoln {
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <1800000>;
+						regulator-always-on;
+					};
+					
+					ldousb {
+						regulator-name = "avdd-usb";
+						regulator-min-microvolt = <3300000>;
+						regulator-max-microvolt = <3300000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					regen2 {
+						regulator-max-microvolt = <5000000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+					
+					sysen1 {
+					
+					};
+				};
+
+
+			};
+		};
+	};
+
+
+
+	sdhci@78000400 {
+		cd-gpios = <&gpio TEGRA_GPIO(V, 2) GPIO_ACTIVE_LOW>;
+		bus-width = <4>;
+		status = "okay";
+	};
+
+	sdhci@78000600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	usb@7d000000 {
+		status = "okay";
+		dr_mode = "host";
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(K, 1) GPIO_ACTIVE_HIGH>;
+	};
+
+
+        phy1: usb-phy@7d000000 {
+
+                status = "okay";
+	};
+
+
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clock@0 {
+			compatible = "fixed-clock";
+			reg=<0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+	
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		power {
+			label = "Power Button";
+			gpios = <&gpio TEGRA_GPIO(V, 0) GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_ENTER>;
+		};
+
+		windows-button {
+			label = "Windows Button";
+			gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_ENTER>;
+		};
+
+		volume-down {
+			label = "Volume Down";
+			gpios = <&gpio TEGRA_GPIO(R, 1) GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_DOWN>;
+		};
+
+		volume-up {
+			label = "Volume Up";
+			gpios = <&gpio TEGRA_GPIO(R, 2) GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_UP>;
+		};
+	};
+};
+
+&uarta {
+//	status = "okay";
+};
