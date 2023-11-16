@@ -76,9 +76,9 @@
 
 	panel: panel {
 		compatible = "samsung,106hl02";
-		//reset-gpios = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
 
-		//power-supply = <&tps65090_fet4>;
+		power-supply = <&tps65090_fet4>;
 
 		backlight = <&backlight>;
 	};
@@ -151,6 +151,8 @@
 					regulator-min-microvolt = <5000000>;
 					regulator-max-microvolt = <5000000>;
 					ti,enable-ext-control;
+					regulator-always-on;
+					regulator-boot-on;
 				};
 
 				// UEFI has it disabled but external control is enabled
@@ -160,12 +162,16 @@
 					regulator-min-microvolt = <3300000>;
 					regulator-max-microvolt = <3300000>;
 					ti,enable-ext-control;
+					regulator-always-on;
+					regulator-boot-on;
 				};
 
 				// UEFI has it disabled but external control is enabled
 				// variable voltage determined by external resistor				
 				tps65090_dcdc3_reg: dcdc3 {
 					ti,enable-ext-control;
+					regulator-always-on;
+                                        regulator-boot-on;
 				};
 
 				// Connected to panel. Don't know how. Need few more tests
@@ -204,6 +210,7 @@
 				tps65090_fet6: fet6 {
 					regulator-name = "vdd-sd-slot";
 					regulator-always-on;
+                                        regulator-boot-on;
 				};
 
 				// FET7
@@ -283,6 +290,7 @@
 						ti,mode-sleep = <0>;
 						regulator-ramp-delay = <5000>;
 						ti,warm-reset;
+                                        regulator-boot-on;
 					};
 
 					tps65913_smps8: smps8 {
@@ -303,6 +311,7 @@
 						regulator-max-microvolt = <1050000>;
 						regulator-always-on;
 						ti,warm-reset;
+                                        regulator-boot-on;
 					};
 					
 					
@@ -367,12 +376,14 @@
 						regulator-min-microvolt = <3300000>;
 						regulator-max-microvolt = <3300000>;
 						regulator-always-on;
+                                        regulator-boot-on;
 					};
 					
 					ldoln {
 						regulator-min-microvolt = <1800000>;
 						regulator-max-microvolt = <1800000>;
 						regulator-always-on;
+                                        regulator-boot-on;
 					};
 					
 					ldousb {
@@ -475,6 +486,7 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		regulator-always-on;
+                                        regulator-boot-on;
 	};
 /*
 	usb3_vbus_reg: regulator-usb3 {
@@ -493,6 +505,7 @@
 		regulator-name = "stub_sd";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+                                        regulator-boot-on;
 	};
 
 	stub_audio_reg: stub_audio {
@@ -530,6 +543,7 @@
 		regulator-enable-ramp-delay = <100000>; // 100ms from ACPI
 		gpio = <&gpio TEGRA_GPIO(X, 6) GPIO_ACTIVE_HIGH>;
 		regulator-always-on;
+                                        regulator-boot-on;
 	};
 */
 

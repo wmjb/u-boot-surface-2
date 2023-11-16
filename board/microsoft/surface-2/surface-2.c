@@ -8,11 +8,13 @@
 #include <log.h>
 #include <asm/arch/pinmux.h>
 #include <asm/arch/gp_padctrl.h>
+#include <power/regulator.h>
 #include "pinmux-config-surface-2.h"
 #include <asm/arch/gpio.h>
 #include <asm/gpio.h>
 #include <linux/delay.h>
 #include <i2c.h>
+#include <env.h>
 
 #define BAT_I2C_ADDRESS		0x48	/* TPS65090 charger */
 #define PMU_I2C_ADDRESS		0x58	/* TPS65913 PMU */
@@ -37,23 +39,30 @@ void pinmux_init(void)
 		ARRAY_SIZE(surface_2_padctrl));
 }
 
+int microsoft_board_init(void)
+{
+	/* Set up boot-on regulators */
+	regulators_enable_boot_on(true);
+
+	return 0;
+}
+
+
 /*
  * Routine: pin_mux_mmc
  * Description: setup the MMC muxes, power rails, etc.
  */
+
+/*
 void pin_mux_mmc(void)
 {
-	/*
-	 * NOTE: We don't do mmc-specific pin muxes here.
-	 * They were done globally in pinmux_init().
-	 */
 
 	gpio_request(TEGRA_GPIO(K, 1), "Enable USB K1");
 	gpio_direction_output(TEGRA_GPIO(K, 1), 0);
 	udelay(5);
 	gpio_set_value(TEGRA_GPIO(K, 1), 1);
 	printf("Enabled GPIO K1\n");
-/*
+
         gpio_request(TEGRA_GPIO(X, 5), "Enable USB X5");
         gpio_direction_output(TEGRA_GPIO(X, 5), 0);
         udelay(5);
@@ -118,6 +127,7 @@ void pin_mux_mmc(void)
         udelay(5);
         gpio_set_value(TEGRA_GPIO(S, 1), 1);
         printf("Enabled GPIO S1\n");
-*/
+
 
 }
+*/
