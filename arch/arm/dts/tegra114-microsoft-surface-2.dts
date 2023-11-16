@@ -126,8 +126,110 @@
 		status = "okay";
 		clock-frequency = <400000>;
 
+
+		pmic1: tps65090@48 {
+			compatible = "ti,tps65090";
+			reg = <0x48>;
+
+			interrupt-parent = <&gpio>;
+			interrupts = <TEGRA_GPIO(S, 2) IRQ_TYPE_LEVEL_HIGH>;
+
+			vsys1-supply = <&vdd_ac_bat_reg>;
+			vsys2-supply = <&vdd_ac_bat_reg>;
+			vsys-l1-supply = <&vdd_ac_bat_reg>;
+			vsys-l2-supply = <&vdd_ac_bat_reg>;
+			
+			infet6-supply = <&stub_sd_reg>;
+
+			regulators {
+				// DCDC Regulators should be always on.
+
+				// UEFI has it disabled but external control is enabled
+				// Fixed at 5V
+				tps65090_dcdc1_reg: dcdc1 {
+					regulator-name = "vdd-sys-5v0";
+					regulator-min-microvolt = <5000000>;
+					regulator-max-microvolt = <5000000>;
+					ti,enable-ext-control;
+				};
+
+				// UEFI has it disabled but external control is enabled
+				// Fixed at 3v3
+				tps65090_dcdc2_reg: dcdc2 {
+					regulator-name = "vdd-sys-3v3";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+					ti,enable-ext-control;
+				};
+
+				// UEFI has it disabled but external control is enabled
+				// variable voltage determined by external resistor				
+				tps65090_dcdc3_reg: dcdc3 {
+					ti,enable-ext-control;
+				};
+
+				// Connected to panel. Don't know how. Need few more tests
+				// 1A / SystemVoltage
+				tps65090_fet1: fet1 {
+					regulator-name = "something-panel";
+					regulator-always-on;
+					regulator-boot-on;
+				};
+
+				// 200mA / 5V0
+				// Enabled but not known
+				// reverse-current protected for connections with external voltage: HDMI, USB
+				tps65090_fet2: fet2 {
+					regulator-always-on;
+					regulator-boot-on;
+				};
+
+				// LDO3 modem on Dalmore. Maybe Surface 2 with modem?
+				// 3A / 3v3
+
+				// Connected to panel. Don't know how. Need few more tests
+				// 1A / 3v3
+				tps65090_fet4: fet4 {
+					//regulator-name = "vdd-lcd";
+					regulator-always-on;
+					regulator-boot-on;
+				};
+
+				// No FET5 - crash boot - can't enable
+				// UEFI says enable but PowerGood signal isn't present
+				// Maybe missing input voltage?
+				// 1A / 3v3
+
+				// 1A / 3v3
+				tps65090_fet6: fet6 {
+					regulator-name = "vdd-sd-slot";
+					regulator-always-on;
+				};
+
+				// FET7
+				// 1A / 3v3
+
+				// always on LDO; can be bypassed by DCDC1/2
+				ldo1 {
+					regulator-name = "vdd-sby-5v0";
+					regulator-min-microvolt = <5000000>;
+					regulator-max-microvolt = <5000000>;
+					regulator-always-on;
+					regulator-boot-on;
+				};
+
+				ldo2 {
+					regulator-name = "vdd-sby-3v3";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+					regulator-always-on;
+					regulator-boot-on;
+				};
+			};
+		};
+
 		/* Texas Instruments TPS65913 PMIC */
-		pmic: tps65913@58 {
+		pmic2: tps65913@58 {
 			compatible = "ti,tps65913";
 			reg = <0x58>;
 
@@ -364,6 +466,72 @@
 			linux,code = <KEY_UP>;
 		};
 	};
+	
+	/* Regulators */
+	vdd_ac_bat_reg: regulator-acbat {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_ac_bat";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+	};
+/*
+	usb3_vbus_reg: regulator-usb3 {
+		compatible = "regulator-fixed";
+		regulator-name = "usb2_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&gpio TEGRA_GPIO(K, 1) GPIO_ACTIVE_HIGH>;
+		//regulator-enable-ramp-delay = <100000>; //offset of 0x4000 a 100ms
+		//vin-supply = <&tps65090_dcdc1_reg>;
+	};
+*/
+	stub_sd_reg: stub_sd {
+		compatible = "regulator-fixed";
+		regulator-name = "stub_sd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	stub_audio_reg: stub_audio {
+		compatible = "regulator-fixed";
+		regulator-name = "stub_audio";
+	};
+
+/*
+	touchscreen_reg: touchscreen_vdd {
+		compatible = "regulator-fixed";
+		regulator-name = "touchscreen_vdd";
+		enable-active-high;
+		regulator-enable-ramp-delay = <70000>; // 70ms from ACPI
+		gpio = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+	};
+*/
+
+/*
+	what_ever_reg: what_ever {
+		compatible = "regulator-fixed";
+		regulator-name = "what";
+		enable-active-high;
+		regulator-enable-ramp-delay = <100000>; // 100ms from ACPI
+		gpio = <&gpio TEGRA_GPIO(H, 2) GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+	};
+
+	
+
+	sensor_hub_reg: sensor_hub_vdd {
+		compatible = "regulator-fixed";
+		regulator-name = "sensor_hub_vdd";
+		enable-active-high;
+		regulator-enable-ramp-delay = <100000>; // 100ms from ACPI
+		gpio = <&gpio TEGRA_GPIO(X, 6) GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+	};
+*/
+
 };
 
 &uarta {
